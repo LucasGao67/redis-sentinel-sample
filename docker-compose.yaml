@@ -3,9 +3,8 @@ services:
   # Redis configuration file example
   # https://raw.githubusercontent.com/antirez/redis/4.0/redis.conf
   master:
-    image: redis:4.0.8-alpine
-    ports:
-      - 6379:6379
+    image: redis:4.0.8-alpinex
+    network_mods: "host"
     volumes:
       - type: volume
         source: master-data
@@ -21,10 +20,9 @@ services:
 
   node-1: &node
     image: redis:4.0.8-alpine
+    network_mods: "host"
     depends_on:
       - master
-    ports:
-      - 6380:6380
     volumes:
       - type: volume
         source: node-1-data
@@ -44,8 +42,6 @@ services:
 
   node-2: 
     <<: *node
-    ports:
-      - 6381:6381
     volumes:
       - type: volume
         source: node-2-data
@@ -77,10 +73,6 @@ services:
     ]
     depends_on:
       - master
-      - node-1
-      - node-2
-    links:
-      - master:${SENTINEL_MASTER_NAME}
       - node-1
       - node-2
   sentinel-2:
