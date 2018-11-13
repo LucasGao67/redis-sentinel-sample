@@ -3,8 +3,8 @@ services:
   # Redis configuration file example
   # https://raw.githubusercontent.com/antirez/redis/4.0/redis.conf
   master:
-    image: redis:4.0.8-alpinex
-    network_mods: "host"
+    image: redis:4.0.8-alpine
+    network_mode: "host"
     volumes:
       - type: volume
         source: master-data
@@ -20,7 +20,7 @@ services:
 
   node-1: &node
     image: redis:4.0.8-alpine
-    network_mods: "host"
+    network_mode: "host"
     depends_on:
       - master
     volumes:
@@ -33,12 +33,10 @@ services:
     command: [
       '--port 6380',
       '--requirepass "${REDIS_PWD}"',
-      '--slaveof master 6379',
+      '--slaveof "${MASTER_IP}" "${MASTER_PORT}"',
       '--masterauth "${REDIS_PWD}"',
       '--save ""',
     ]
-    links:
-      - master:${SENTINEL_MASTER_NAME}
 
   node-2: 
     <<: *node
@@ -52,7 +50,7 @@ services:
     command: [
       '--port 6381',
       '--requirepass "${REDIS_PWD}"',
-      '--slaveof master 6379',
+      '--slaveof "${MASTER_IP}" "${MASTER_PORT}""',
       '--masterauth "${REDIS_PWD}"',
       '--save ""',
     ]
@@ -62,10 +60,13 @@ services:
       context: ./sentinel
       dockerfile: Dockerfile-sentinel
     image: redis-sentinel:dev
+    network_mode: "host"
     environment:
       - SENTINEL_REDIS_PWD=${REDIS_PWD}
-      - SENTINEL_REDIS_IP=${SENTINEL_MASTER_NAME}
+      - SENTINEL_MASTER_NAME=${MASTER_IP}
+      - SENTINEL_REDIS_PORT=${MASTER_PORT}
       - SENTINEL_QUORUM=2
+      - SENTINEL_PORT=${SENTINEL_PORT_1}
       - SENTINEL_DOWN_AFTER=3000
     command: [
       '${SENTINEL_CONF_PATH}',
@@ -75,20 +76,37 @@ services:
       - master
       - node-1
       - node-2
+
   sentinel-2:
     <<: *sentinel
+    environment:
+      - SENTINEL_PORT=${SENTINEL_PORT_2}
+      - SENTINEL_REDIS_PWD=${REDIS_PWD}
+      - SENTINEL_MASTER_NAME=${MASTER_IP}
+      - SENTINEL_REDIS_PORT=${MASTER_PORT}
+      - SENTINEL_QUORUM=2
+      - SENTINEL_DOWN_AFTER=3000
+    
   sentinel-3:
     <<: *sentinel
+    environment:
+      - SENTINEL_PORT=${SENTINEL_PORT_3}
+      - SENTINEL_REDIS_PWD=${REDIS_PWD}
+      - SENTINEL_MASTER_NAME=${MASTER_IP}
+      - SENTINEL_REDIS_PORT=${MASTER_PORT}
+      - SENTINEL_QUORUM=2
+      - SENTINEL_DOWN_AFTER=3000
 
   nginx:
     image: nginx:1.13.9-alpine
-    ports:
-      - 26379:26379
+    network_mode: "host"
     volumes:
       - type: bind
         source: ./nginx/nginx.conf
         target: /etc/nginx/nginx.conf
         read_only: true
+    extra_hosts:
+       SENTINEL_IP: ${SENTINEL_IP}
     depends_on:
       - sentinel-1
       - sentinel-2
