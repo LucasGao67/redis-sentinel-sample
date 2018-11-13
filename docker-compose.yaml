@@ -1,4 +1,5 @@
-version: "3.3"
+version: '3.4'
+
 services:
   # Redis configuration file example
   # https://raw.githubusercontent.com/antirez/redis/4.0/redis.conf
@@ -61,10 +62,15 @@ services:
       dockerfile: Dockerfile-sentinel
     image: redis-sentinel:dev
     network_mode: "host"
-    env_file:
-     - ./sentinel.env
-    environment: 
-      - SENTINEL_PORT=${SENTINEL_PORT_1}
+    environment: &sentinel_env
+      # redis密码
+      SENTINEL_REDIS_PWD: ${REDIS_PWD}
+      SENTINEL_PORT: ${SENTINEL_PORT_1}
+      # sentinel名称
+      SENTINEL_MASTER_NAME: ${SENTINEL_MASTER_NAME}
+      SENTINEL_QUORUM: 2
+      SENTINEL_REDIS_IP: ${MASTER_IP}
+      SENTINEL_DOWN_AFTER: 3000
     command: [
       '${SENTINEL_CONF_PATH}',
       '--sentinel'
@@ -77,12 +83,14 @@ services:
   sentinel-2:
     <<: *sentinel
     environment:
-      - SENTINEL_PORT=${SENTINEL_PORT_2}
+      <<: *sentinel_env
+      SENTINEL_PORT: ${SENTINEL_PORT_2}
     
   sentinel-3:
     <<: *sentinel
     environment:
-      - SENTINEL_PORT=${SENTINEL_PORT_3}
+      <<: *sentinel_env
+      SENTINEL_PORT: ${SENTINEL_PORT_3}
 
   nginx:
     image: nginx:1.13.9-alpine

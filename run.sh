@@ -11,7 +11,6 @@ export MASTER_IP="127.0.0.1"
 export MASTER_PORT="6379"
 
 
-
 #===============
 #sentinel相关
 #===============
@@ -21,4 +20,4 @@ export SENTINEL_PORT_2="26382"
 export SENTINEL_PORT_3="26383"
 export SENTINEL_MASTER_NAME="myredis"
 
-docker-compose up $@
+docker-compose $@
