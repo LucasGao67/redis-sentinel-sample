@@ -50,7 +50,7 @@ services:
     command: [
       '--port 6381',
       '--requirepass "${REDIS_PWD}"',
-      '--slaveof "${MASTER_IP}" "${MASTER_PORT}""',
+      '--slaveof "${MASTER_IP}" "${MASTER_PORT}"',
       '--masterauth "${REDIS_PWD}"',
       '--save ""',
     ]
