@@ -7,4 +7,4 @@ export SENTINEL_PORT_1="26381"
 export SENTINEL_PORT_2="26382"
 export SENTINEL_PORT_3="26383"
 
-docker-compose up
+docker-compose up -d
