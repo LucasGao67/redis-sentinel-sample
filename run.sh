@@ -7,5 +7,6 @@ export SENTINEL_PORT_1="26381"
 export SENTINEL_PORT_2="26382"
 export SENTINEL_PORT_3="26383"
 export SENTINEL_MASTER_NAME="myredis"
+export SENTINEL_MASTER_IP="127.0.0.1"
 
 docker-compose up $@
