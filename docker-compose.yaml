@@ -61,14 +61,10 @@ services:
       dockerfile: Dockerfile-sentinel
     image: redis-sentinel:dev
     network_mode: "host"
-    environment:
-      - SENTINEL_REDIS_PWD=${REDIS_PWD}
-      - SENTINEL_MASTER_NAME=${SENTINEL_MASTER_NAME}
-      - SENTINEL_REDIS_PORT=${MASTER_PORT}
-      - SENTINEL_QUORUM=2
-      - SENTINEL_MASTER_IP=${SENTINEL_REDIS_IP}
+    env_file:
+     - ./sentinel.env
+    environment: 
       - SENTINEL_PORT=${SENTINEL_PORT_1}
-      - SENTINEL_DOWN_AFTER=3000
     command: [
       '${SENTINEL_CONF_PATH}',
       '--sentinel'
@@ -82,23 +78,11 @@ services:
     <<: *sentinel
     environment:
       - SENTINEL_PORT=${SENTINEL_PORT_2}
-      - SENTINEL_REDIS_PWD=${REDIS_PWD}
-      - SENTINEL_MASTER_NAME=${SENTINEL_MASTER_NAME}
-      - SENTINEL_MASTER_IP=${SENTINEL_REDIS_IP}
-      - SENTINEL_REDIS_PORT=${MASTER_PORT}
-      - SENTINEL_QUORUM=2
-      - SENTINEL_DOWN_AFTER=3000
     
   sentinel-3:
     <<: *sentinel
     environment:
       - SENTINEL_PORT=${SENTINEL_PORT_3}
-      - SENTINEL_REDIS_PWD=${REDIS_PWD}
-      - SENTINEL_MASTER_NAME=${SENTINEL_MASTER_NAME}
-      - SENTINEL_MASTER_IP=${SENTINEL_REDIS_IP}
-      - SENTINEL_REDIS_PORT=${MASTER_PORT}
-      - SENTINEL_QUORUM=2
-      - SENTINEL_DOWN_AFTER=3000
 
   nginx:
     image: nginx:1.13.9-alpine
